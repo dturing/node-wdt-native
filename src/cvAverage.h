@@ -10,7 +10,7 @@
 class cvAverage : public Nan::ObjectWrap {
 public:
 
-    static Persistent<FunctionTemplate> constructor;
+    static Nan::Persistent<FunctionTemplate> constructor;
     static void Init(Local<Object> target);
     static NAN_METHOD(New);
     cvAverage();

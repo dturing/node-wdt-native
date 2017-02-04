@@ -129,8 +129,8 @@ NAN_METHOD(wMotion::Process) {
             //P[i] = abs( bg[i]-cur[i] )>pthresh?255:0;
 
             // good looking
-            M[i] = abs( recent[i]-cur[i] )>mthresh?64:128;
-            P[i] = abs( bg[i]-cur[i] )>pthresh?64:128;
+            M[i] = std::abs( recent[i]-cur[i] )>mthresh?64:128;
+            P[i] = std::abs( bg[i]-cur[i] )>pthresh?64:128;
 
             // "real"
             //M[i] = 128+(late[i]-cur[i]);
@@ -143,7 +143,7 @@ NAN_METHOD(wMotion::Process) {
         }
 
         v8::Local<v8::Array> arr = Nan::New<Array>(2);
-
+/* TODO XXX: this is deprecated API, use typed arrays?
         v8::Local<v8::Object> currentArray = Nan::New<v8::Object>();
         currentArray->SetIndexedPropertiesToExternalArrayData(&cur, v8::kExternalUnsignedByteArray, sz4);
 
@@ -152,6 +152,6 @@ NAN_METHOD(wMotion::Process) {
 
         arr->Set(0, currentArray);
         arr->Set(1, recentArray);
-
+*/
         info.GetReturnValue().Set(arr);
 }

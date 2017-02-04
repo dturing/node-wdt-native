@@ -6,7 +6,6 @@
 
 #include "OpenCV.h"
 #include "Matrix.h"
-#include <nan.h>
 
 Nan::Persistent<FunctionTemplate> cvAverage::constructor;
 
