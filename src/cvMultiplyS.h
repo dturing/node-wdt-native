@@ -8,11 +8,11 @@
 
 #include "OpenCV.h"
 
-class cvMultiplyS : public node::ObjectWrap {
+class cvMultiplyS : public Nan::ObjectWrap {
 public:
 
     static Persistent<FunctionTemplate> constructor;
-    static void Init(Handle<Object> target);
+    static void Init(Local<Object> target);
     static NAN_METHOD(New);
     cvMultiplyS();
 

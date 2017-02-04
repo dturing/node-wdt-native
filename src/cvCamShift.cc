@@ -8,41 +8,41 @@
 #include "Matrix.h"
 #include <nan.h>
 
-v8::Persistent<FunctionTemplate> cvCamShift::constructor;
+Nan::Persistent<FunctionTemplate> cvCamShift::constructor;
 
 void
-cvCamShift::Init(Handle<Object> target) {
-    NanScope();
+cvCamShift::Init(Local<Object> target) {
+    Nan::HandleScope scope;
 
     //Class
-    Local<FunctionTemplate> ctor = NanNew<FunctionTemplate>(cvCamShift::New);
-    NanAssignPersistent(constructor, ctor);
+    Local<FunctionTemplate> ctor = Nan::New<FunctionTemplate>(cvCamShift::New);
+    constructor.Reset( ctor);
     ctor->InstanceTemplate()->SetInternalFieldCount(1);
-    ctor->SetClassName(NanNew("cvCamShift"));
+    ctor->SetClassName(Nan::New("cvCamShift").ToLocalChecked());
 
     // Prototype
-    NODE_SET_PROTOTYPE_METHOD(ctor, "process", Process);
+    Nan::SetPrototypeMethod(ctor, "process", Process);
 
-    target->Set(NanNew("cvCamShift"), ctor->GetFunction());
+    target->Set(Nan::New("cvCamShift").ToLocalChecked(), ctor->GetFunction());
 }
 
 NAN_METHOD(cvCamShift::New) {
-        NanScope();
+        Nan::HandleScope scope;
 
-        NanReturnValue(args.Holder());
+        info.GetReturnValue().Set(info.Holder());
 }
 
 
-cvCamShift::cvCamShift(): ObjectWrap() {
+cvCamShift::cvCamShift(): Nan::ObjectWrap() {
 
 }
 
 NAN_METHOD(cvCamShift::Process) {
-        NanScope();
+        Nan::HandleScope scope;
 
         static float lastangle = -10000;
 
-        Matrix *src = ObjectWrap::Unwrap<Matrix>(args[0]->ToObject());
+        Matrix *src = Nan::ObjectWrap::Unwrap<Matrix>(info[0]->ToObject());
         cv::Mat image = cv::Mat::zeros(src->mat.size(), CV_8UC1 );
         cv::cvtColor(src->mat, image, CV_RGB2GRAY, 1);
         //src->mat.convertTo(image, CV_8UC1);
@@ -77,13 +77,13 @@ NAN_METHOD(cvCamShift::Process) {
 
         float max = sqrt((image.cols*image.cols)+(image.rows*image.rows));
 
-        v8::Local<v8::Array> arr = NanNew<Array>(5);
+        v8::Local<v8::Array> arr = Nan::New<Array>(5);
 
-        arr->Set(0, NanNew<Number>((box.center.x + window.x)/image.cols)); // x
-        arr->Set(1, NanNew<Number>((box.center.y + window.y)/image.rows)); // y
-        arr->Set(2, NanNew<Number>((float)box.size.width/max)); // width
-        arr->Set(3, NanNew<Number>((float)box.size.height/max)); // height
-        arr->Set(4, NanNew<Number>(box.angle)); // angle
+        arr->Set(0, Nan::New<Number>((box.center.x + window.x)/image.cols)); // x
+        arr->Set(1, Nan::New<Number>((box.center.y + window.y)/image.rows)); // y
+        arr->Set(2, Nan::New<Number>((float)box.size.width/max)); // width
+        arr->Set(3, Nan::New<Number>((float)box.size.height/max)); // height
+        arr->Set(4, Nan::New<Number>(box.angle)); // angle
 
-        NanReturnValue(arr);
+        info.GetReturnValue().Set(arr);
 }

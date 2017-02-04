@@ -24,7 +24,7 @@
   "dependencies": {
     "bindings": "^1.2.1",
     "cmake-js": "^0.10.4",
-    "nan": "^1.8.4",
-    "opencv": "^3.0.0"
+    "nan": "^2.5.1",
+    "opencv": "^6.0.0"
   }
 }

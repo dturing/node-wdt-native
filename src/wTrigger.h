@@ -8,11 +8,11 @@
 
 #include "OpenCV.h"
 
-class wTrigger : public node::ObjectWrap {
+class wTrigger : public Nan::ObjectWrap {
 public:
 
     static Persistent<FunctionTemplate> constructor;
-    static void Init(Handle<Object> target);
+    static void Init(Local<Object> target);
     static NAN_METHOD(New);
     wTrigger();
 

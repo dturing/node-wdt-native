@@ -8,39 +8,39 @@
 #include "Matrix.h"
 #include <nan.h>
 
-v8::Persistent<FunctionTemplate> wExtremes::constructor;
+Nan::Persistent<FunctionTemplate> wExtremes::constructor;
 
 void
-wExtremes::Init(Handle<Object> target) {
-    NanScope();
+wExtremes::Init(Local<Object> target) {
+    Nan::HandleScope scope;
 
     //Class
-    Local<FunctionTemplate> ctor = NanNew<FunctionTemplate>(wExtremes::New);
-    NanAssignPersistent(constructor, ctor);
+    Local<FunctionTemplate> ctor = Nan::New<FunctionTemplate>(wExtremes::New);
+    constructor.Reset( ctor);
     ctor->InstanceTemplate()->SetInternalFieldCount(1);
-    ctor->SetClassName(NanNew("wExtremes"));
+    ctor->SetClassName(Nan::New("wExtremes").ToLocalChecked());
 
     // Prototype
-    NODE_SET_PROTOTYPE_METHOD(ctor, "process", Process);
+    Nan::SetPrototypeMethod(ctor, "process", Process);
 
-    target->Set(NanNew("wExtremes"), ctor->GetFunction());
+    target->Set(Nan::New("wExtremes").ToLocalChecked(), ctor->GetFunction());
 }
 
 NAN_METHOD(wExtremes::New) {
-        NanScope();
+        Nan::HandleScope scope;
 
-        NanReturnValue(args.Holder());
+        info.GetReturnValue().Set(info.Holder());
 }
 
 
-wExtremes::wExtremes(): ObjectWrap() {
+wExtremes::wExtremes(): Nan::ObjectWrap() {
 
 }
 
 NAN_METHOD(wExtremes::Process) {
-        NanScope();
+        Nan::HandleScope scope;
 
-        Matrix *src = ObjectWrap::Unwrap<Matrix>(args[0]->ToObject());
+        Matrix *src = Nan::ObjectWrap::Unwrap<Matrix>(info[0]->ToObject());
         cv::Mat gray;
         cv::cvtColor(src->mat, gray, CV_BGR2GRAY);
 
@@ -100,12 +100,12 @@ NAN_METHOD(wExtremes::Process) {
             }
         }
 
-        v8::Local<v8::Array> arr = NanNew<Array>(4);
+        v8::Local<v8::Array> arr = Nan::New<Array>(4);
 
-        arr->Set(0, NanNew<Number>(left));
-        arr->Set(1, NanNew<Number>(right));
-        arr->Set(2, NanNew<Number>(top));
-        arr->Set(3, NanNew<Number>(bottom));
+        arr->Set(0, Nan::New<Number>(left));
+        arr->Set(1, Nan::New<Number>(right));
+        arr->Set(2, Nan::New<Number>(top));
+        arr->Set(3, Nan::New<Number>(bottom));
 
-        NanReturnValue(arr);
+        info.GetReturnValue().Set(arr);
 }

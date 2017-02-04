@@ -15,8 +15,8 @@
 #include "wTrigger.h"
 
 extern "C" void
-init(Handle<Object> target) {
-    NanScope();
+init(Local<Object> target) {
+    Nan::HandleScope scope;
     OpenCV::Init(target);
 
     Point::Init(target);

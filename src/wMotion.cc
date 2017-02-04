@@ -7,7 +7,7 @@
 #include "Matrix.h"
 #include <nan.h>
 
-v8::Persistent<FunctionTemplate> wMotion::constructor;
+Nan::Persistent<FunctionTemplate> wMotion::constructor;
 
 int buffersSize;
 unsigned char *cur;
@@ -18,29 +18,29 @@ int motionThreshold, presenceThreshold;
 float motionWeight, presenceWeight;
 
 void
-wMotion::Init(Handle<Object> target) {
-    NanScope();
+wMotion::Init(Local<Object> target) {
+    Nan::HandleScope scope;
 
     //Class
-    Local<FunctionTemplate> ctor = NanNew<FunctionTemplate>(wMotion::New);
-    NanAssignPersistent(constructor, ctor);
+    Local<FunctionTemplate> ctor = Nan::New<FunctionTemplate>(wMotion::New);
+    constructor.Reset( ctor);
     ctor->InstanceTemplate()->SetInternalFieldCount(1);
-    ctor->SetClassName(NanNew("wMotion"));
+    ctor->SetClassName(Nan::New("wMotion").ToLocalChecked());
 
     // Prototype
-    NODE_SET_PROTOTYPE_METHOD(ctor, "process", Process);
+    Nan::SetPrototypeMethod(ctor, "process", Process);
 
-    target->Set(NanNew("wMotion"), ctor->GetFunction());
+    target->Set(Nan::New("wMotion").ToLocalChecked(), ctor->GetFunction());
 }
 
 NAN_METHOD(wMotion::New) {
-        NanScope();
+        Nan::HandleScope scope;
 
-        NanReturnValue(args.Holder());
+        info.GetReturnValue().Set(info.Holder());
 }
 
 
-wMotion::wMotion(): ObjectWrap() {
+wMotion::wMotion(): Nan::ObjectWrap() {
     if( cur ) delete[] cur;
     if( bg ) delete[] bg;
     if( recent ) delete[] recent;
@@ -71,23 +71,23 @@ void quarterScale( unsigned char *to, unsigned char *from, int w, int h ) {
 }
 
 NAN_METHOD(wMotion::Reset) {
-        NanScope();
+        Nan::HandleScope scope;
         buffersSize = -1;
 
-        NanReturnNull();
+        info.GetReturnValue().Set(Nan::Null());
 }
 
 NAN_METHOD(wMotion::Process) {
-        NanScope();
+        Nan::HandleScope scope;
 
-        Matrix *src = ObjectWrap::Unwrap<Matrix>(args[0]->ToObject());
+        Matrix *src = Nan::ObjectWrap::Unwrap<Matrix>(info[0]->ToObject());
         cv::Mat yuv;
         cv::cvtColor(src->mat, yuv, CV_RGB2YCrCb);
 
-        motionThreshold = args[1]->IntegerValue();
-        presenceThreshold = args[2]->IntegerValue();
-        motionWeight = (float)args[3]->NumberValue();
-        presenceWeight = (float)args[4]->NumberValue();
+        motionThreshold = info[1]->IntegerValue();
+        presenceThreshold = info[2]->IntegerValue();
+        motionWeight = (float)info[3]->NumberValue();
+        presenceWeight = (float)info[4]->NumberValue();
 
         int sz = yuv.cols*yuv.rows;
         int sz4 = ( (yuv.cols/2)*(yuv.rows/2));
@@ -142,16 +142,16 @@ NAN_METHOD(wMotion::Process) {
             recent[i] += cur[i]*mw;
         }
 
-        v8::Local<v8::Array> arr = NanNew<Array>(2);
+        v8::Local<v8::Array> arr = Nan::New<Array>(2);
 
-        v8::Handle<v8::Object> currentArray = NanNew<v8::Object>();
+        v8::Local<v8::Object> currentArray = Nan::New<v8::Object>();
         currentArray->SetIndexedPropertiesToExternalArrayData(&cur, v8::kExternalUnsignedByteArray, sz4);
 
-        v8::Handle<v8::Object> recentArray = NanNew<v8::Object>();
+        v8::Local<v8::Object> recentArray = Nan::New<v8::Object>();
         recentArray->SetIndexedPropertiesToExternalArrayData(&cur, v8::kExternalUnsignedByteArray, sz4);
 
         arr->Set(0, currentArray);
         arr->Set(1, recentArray);
 
-        NanReturnValue(arr);
+        info.GetReturnValue().Set(arr);
 }

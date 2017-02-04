@@ -6,7 +6,7 @@
 #include "Matrix.h"
 #include <nan.h>
 
-v8::Persistent<FunctionTemplate> cvMotion::constructor;
+Nan::Persistent<FunctionTemplate> cvMotion::constructor;
 
 float weight, scale;
 double shift;
@@ -16,59 +16,59 @@ cv::Mat accImage, tmpImage;
 cv::Size tmpSize;
 
 void
-cvMotion::Init(Handle<Object> target) {
-    NanScope();
+cvMotion::Init(Local<Object> target) {
+    Nan::HandleScope scope;
 
     //Class
-    Local<FunctionTemplate> ctor = NanNew<FunctionTemplate>(cvMotion::New);
-    NanAssignPersistent(constructor, ctor);
+    Local<FunctionTemplate> ctor = Nan::New<FunctionTemplate>(cvMotion::New);
+    constructor.Reset( ctor);
     ctor->InstanceTemplate()->SetInternalFieldCount(1);
-    ctor->SetClassName(NanNew("cvMotion"));
+    ctor->SetClassName(Nan::New("cvMotion").ToLocalChecked());
 
     // Prototype
-    NODE_SET_PROTOTYPE_METHOD(ctor, "process", Process);
+    Nan::SetPrototypeMethod(ctor, "process", Process);
 
-    target->Set(NanNew("cvMotion"), ctor->GetFunction());
+    target->Set(Nan::New("cvMotion").ToLocalChecked(), ctor->GetFunction());
 }
 
 NAN_METHOD(cvMotion::New) {
-        NanScope();
+        Nan::HandleScope scope;
 
         tmpSize.width = tmpSize.height = 0;
 
-        NanReturnValue(args.Holder());
+        info.GetReturnValue().Set(info.Holder());
 }
 
 
-cvMotion::cvMotion(): ObjectWrap() {
+cvMotion::cvMotion(): Nan::ObjectWrap() {
 
 }
 
 NAN_METHOD(cvMotion::Reset) {
-        NanScope();
+        Nan::HandleScope scope;
 
         if (!accImage.empty()) {
             accImage.release();
         }
         tmpSize.width = tmpSize.height = 0;
 
-        NanReturnNull();
+        info.GetReturnValue().Set(Nan::Null());
 }
 
 NAN_METHOD(cvMotion::Process) {
-        NanScope();
+        Nan::HandleScope scope;
 
-        Matrix *src = ObjectWrap::Unwrap<Matrix>(args[0]->ToObject());
+        Matrix *src = Nan::ObjectWrap::Unwrap<Matrix>(info[0]->ToObject());
         cv::Mat srcMat = cv::Mat::zeros(src->mat.size(), CV_8UC3);
         src->mat.convertTo(srcMat, CV_8UC3);
 
-        Local<Object> outMatrixWrap = NanNew(Matrix::constructor)->GetFunction()->NewInstance();
-        Matrix *outMatrix = ObjectWrap::Unwrap<Matrix>(outMatrixWrap);
+        Local<Object> outMatrixWrap = Nan::New(Matrix::constructor)->GetFunction()->NewInstance();
+        Matrix *outMatrix = Nan::ObjectWrap::Unwrap<Matrix>(outMatrixWrap);
 
-        weight = (float)args[1]->NumberValue();
-        scale = (float)args[2]->NumberValue();
-        shift = (double)args[3]->NumberValue();
-        mode = args[4]->IntegerValue();
+        weight = (float)info[1]->NumberValue();
+        scale = (float)info[2]->NumberValue();
+        shift = (double)info[3]->NumberValue();
+        mode = info[4]->IntegerValue();
 
         if (srcMat.size() != accImage.size()) {
             accImage = cv::Mat::zeros(srcMat.size(), CV_32FC3);
@@ -99,7 +99,7 @@ NAN_METHOD(cvMotion::Process) {
             src->mat = outMatrix->mat;
         }
 
-        NanReturnNull();
+        info.GetReturnValue().Set(Nan::Null());
 
-        //NanReturnValue(outMatrixWrap);
+        //info.GetReturnValue().Set(outMatrixWrap);
 }

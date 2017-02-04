@@ -8,41 +8,41 @@
 #include "Matrix.h"
 #include <nan.h>
 
-v8::Persistent<FunctionTemplate> cvAverage::constructor;
+Nan::Persistent<FunctionTemplate> cvAverage::constructor;
 
 cv::Mat mat;
 
 void
-cvAverage::Init(Handle<Object> target) {
-    NanScope();
+cvAverage::Init(Local<Object> target) {
+    Nan::HandleScope scope;
 
     //Class
-    Local<FunctionTemplate> ctor = NanNew<FunctionTemplate>(cvAverage::New);
-    NanAssignPersistent(constructor, ctor);
+    Local<FunctionTemplate> ctor = Nan::New<FunctionTemplate>(cvAverage::New);
+    constructor.Reset( ctor);
     ctor->InstanceTemplate()->SetInternalFieldCount(1);
-    ctor->SetClassName(NanNew("cvAverage"));
+    ctor->SetClassName(Nan::New("cvAverage").ToLocalChecked());
 
     // Prototype
-    NODE_SET_PROTOTYPE_METHOD(ctor, "process", Process);
+    Nan::SetPrototypeMethod(ctor, "process", Process);
 
-    target->Set(NanNew("cvAverage"), ctor->GetFunction());
+    target->Set(Nan::New("cvAverage").ToLocalChecked(), ctor->GetFunction());
 }
 
 NAN_METHOD(cvAverage::New) {
-        NanScope();
+        Nan::HandleScope scope;
 
-        NanReturnValue(args.Holder());
+        info.GetReturnValue().Set(info.Holder());
 }
 
 
-cvAverage::cvAverage(): ObjectWrap() {
+cvAverage::cvAverage(): Nan::ObjectWrap() {
     mat = cv::Mat::zeros(1, 1, CV_32FC3);
 }
 
 NAN_METHOD(cvAverage::Process) {
-        NanScope();
+        Nan::HandleScope scope;
 
-        Matrix *src = ObjectWrap::Unwrap<Matrix>(args[0]->ToObject());
+        Matrix *src = Nan::ObjectWrap::Unwrap<Matrix>(info[0]->ToObject());
         cv::Mat srcMat = cv::Mat::zeros(src->mat.size(), CV_8UC3);
         src->mat.convertTo(srcMat, CV_8UC3);
 
@@ -50,9 +50,9 @@ NAN_METHOD(cvAverage::Process) {
             mat = cv::Mat::zeros(src->mat.size(), CV_32FC3);
         }
 
-        cv::accumulateWeighted(srcMat, mat, (double)args[1]->NumberValue());
+        cv::accumulateWeighted(srcMat, mat, (double)info[1]->NumberValue());
 
         mat.convertTo(src->mat, CV_8UC3);
 
-        NanReturnNull();
+        info.GetReturnValue().Set(Nan::Null());
 }

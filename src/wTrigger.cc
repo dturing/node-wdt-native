@@ -8,43 +8,43 @@
 #include "Matrix.h"
 #include <nan.h>
 
-v8::Persistent<FunctionTemplate> wTrigger::constructor;
+Nan::Persistent<FunctionTemplate> wTrigger::constructor;
 
 void
-wTrigger::Init(Handle<Object> target) {
-    NanScope();
+wTrigger::Init(Local<Object> target) {
+    Nan::HandleScope scope;
 
     //Class
-    Local<FunctionTemplate> ctor = NanNew<FunctionTemplate>(wTrigger::New);
-    NanAssignPersistent(constructor, ctor);
+    Local<FunctionTemplate> ctor = Nan::New<FunctionTemplate>(wTrigger::New);
+    constructor.Reset( ctor);
     ctor->InstanceTemplate()->SetInternalFieldCount(1);
-    ctor->SetClassName(NanNew("wTrigger"));
+    ctor->SetClassName(Nan::New("wTrigger").ToLocalChecked());
 
     // Prototype
-    NODE_SET_PROTOTYPE_METHOD(ctor, "process", Process);
+    Nan::SetPrototypeMethod(ctor, "process", Process);
 
-    target->Set(NanNew("wTrigger"), ctor->GetFunction());
+    target->Set(Nan::New("wTrigger").ToLocalChecked(), ctor->GetFunction());
 }
 
 NAN_METHOD(wTrigger::New) {
-        NanScope();
+        Nan::HandleScope scope;
 
-        NanReturnValue(args.Holder());
+        info.GetReturnValue().Set(info.Holder());
 }
 
 
-wTrigger::wTrigger(): ObjectWrap() {
+wTrigger::wTrigger(): Nan::ObjectWrap() {
 
 }
 
 NAN_METHOD(wTrigger::Process) {
-        NanScope();
+        Nan::HandleScope scope;
 
-        Matrix *src = ObjectWrap::Unwrap<Matrix>(args[0]->ToObject());
+        Matrix *src = Nan::ObjectWrap::Unwrap<Matrix>(info[0]->ToObject());
         cv::Mat yuv;
         cv::cvtColor(src->mat, yuv, CV_RGB2YCrCb);
 
-        v8::Local<v8::String> name = args[1]->ToString();
+        v8::Local<v8::String> name = info[1]->ToString();
 
         float motion, presence;
 
@@ -54,10 +54,10 @@ NAN_METHOD(wTrigger::Process) {
         unsigned char *U = Y + sz;
         unsigned char *V = U + sz4;
 
-        int x0 = (int)(args[2]->IntegerValue()* yuv.cols/2); // x
-        int y0 = (int)(args[3]->IntegerValue() * yuv.rows/2); // y
-        int x1 = (int)(args[4]->IntegerValue() * yuv.cols/2); // w
-        int y1 = (int)(args[5]->IntegerValue() * yuv.rows/2); // h
+        int x0 = (int)(info[2]->IntegerValue()* yuv.cols/2); // x
+        int y0 = (int)(info[3]->IntegerValue() * yuv.rows/2); // y
+        int x1 = (int)(info[4]->IntegerValue() * yuv.cols/2); // w
+        int y1 = (int)(info[5]->IntegerValue() * yuv.rows/2); // h
         int s = x1*y1;
         int bpl = yuv.cols/2;
 
@@ -74,11 +74,11 @@ NAN_METHOD(wTrigger::Process) {
         motion = MAX(0,MIN(1,vacc));
         presence = MAX(0,MIN(1,uacc));
 
-        v8::Local<v8::Array> arr = NanNew<Array>(3);
+        v8::Local<v8::Array> arr = Nan::New<Array>(3);
 
-        arr->Set(0, NanNew<Number>(motion));
-        arr->Set(1, NanNew<Number>(presence));
+        arr->Set(0, Nan::New<Number>(motion));
+        arr->Set(1, Nan::New<Number>(presence));
         arr->Set(2, name);
 
-        NanReturnValue(arr);
+        info.GetReturnValue().Set(arr);
 }

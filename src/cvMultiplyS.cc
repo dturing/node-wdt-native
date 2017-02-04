@@ -8,40 +8,40 @@
 #include "Matrix.h"
 #include <nan.h>
 
-v8::Persistent<FunctionTemplate> cvMultiplyS::constructor;
+Nan::Persistent<FunctionTemplate> cvMultiplyS::constructor;
 
 void
-cvMultiplyS::Init(Handle<Object> target) {
-    NanScope();
+cvMultiplyS::Init(Local<Object> target) {
+    Nan::HandleScope scope;
 
     //Class
-    Local<FunctionTemplate> ctor = NanNew<FunctionTemplate>(cvMultiplyS::New);
-    NanAssignPersistent(constructor, ctor);
+    Local<FunctionTemplate> ctor = Nan::New<FunctionTemplate>(cvMultiplyS::New);
+    constructor.Reset( ctor);
     ctor->InstanceTemplate()->SetInternalFieldCount(1);
-    ctor->SetClassName(NanNew("cvMultiplyS"));
+    ctor->SetClassName(Nan::New("cvMultiplyS").ToLocalChecked());
 
     // Prototype
-    NODE_SET_PROTOTYPE_METHOD(ctor, "process", Process);
+    Nan::SetPrototypeMethod(ctor, "process", Process);
 
-    target->Set(NanNew("cvMultiplyS"), ctor->GetFunction());
+    target->Set(Nan::New("cvMultiplyS").ToLocalChecked(), ctor->GetFunction());
 }
 
 NAN_METHOD(cvMultiplyS::New) {
-        NanScope();
-        NanReturnValue(args.Holder());
+        Nan::HandleScope scope;
+        info.GetReturnValue().Set(info.Holder());
 }
 
 
-cvMultiplyS::cvMultiplyS(): ObjectWrap() {
+cvMultiplyS::cvMultiplyS(): Nan::ObjectWrap() {
 
 }
 
 NAN_METHOD(cvMultiplyS::Process) {
-        NanScope();
+        Nan::HandleScope scope;
 
-        Matrix *src = ObjectWrap::Unwrap<Matrix>(args[0]->ToObject());
-        src->mat.convertTo(src->mat, CV_8UC3, (float)args[1]->NumberValue(), (float)args[2]->NumberValue());
+        Matrix *src = Nan::ObjectWrap::Unwrap<Matrix>(info[0]->ToObject());
+        src->mat.convertTo(src->mat, CV_8UC3, (float)info[1]->NumberValue(), (float)info[2]->NumberValue());
 
-        NanReturnNull();
+        info.GetReturnValue().Set(Nan::Null());
 }
 

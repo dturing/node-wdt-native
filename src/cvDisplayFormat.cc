@@ -6,45 +6,45 @@
 #include "Matrix.h"
 #include <nan.h>
 
-v8::Persistent<FunctionTemplate> cvDisplayFormat::constructor;
+Nan::Persistent<FunctionTemplate> cvDisplayFormat::constructor;
 
 void
-cvDisplayFormat::Init(Handle<Object> target) {
-    NanScope();
+cvDisplayFormat::Init(Local<Object> target) {
+    Nan::HandleScope scope;
 
     //Class
-    Local<FunctionTemplate> ctor = NanNew<FunctionTemplate>(cvDisplayFormat::New);
-    NanAssignPersistent(constructor, ctor);
+    Local<FunctionTemplate> ctor = Nan::New<FunctionTemplate>(cvDisplayFormat::New);
+    constructor.Reset( ctor);
     ctor->InstanceTemplate()->SetInternalFieldCount(1);
-    ctor->SetClassName(NanNew("cvDisplayFormat"));
+    ctor->SetClassName(Nan::New("cvDisplayFormat").ToLocalChecked());
 
     // Prototype
-    NODE_SET_PROTOTYPE_METHOD(ctor, "process", Process);
+    Nan::SetPrototypeMethod(ctor, "process", Process);
 
-    target->Set(NanNew("cvDisplayFormat"), ctor->GetFunction());
+    target->Set(Nan::New("cvDisplayFormat").ToLocalChecked(), ctor->GetFunction());
 }
 
 NAN_METHOD(cvDisplayFormat::New) {
-        NanScope();
+        Nan::HandleScope scope;
 
-        NanReturnValue(args.Holder());
+        info.GetReturnValue().Set(info.Holder());
 }
 
 
-cvDisplayFormat::cvDisplayFormat(): ObjectWrap() {
+cvDisplayFormat::cvDisplayFormat(): Nan::ObjectWrap() {
 
 }
 
 NAN_METHOD(cvDisplayFormat::Reset) {
-        NanScope();
+        Nan::HandleScope scope;
 
-        NanReturnNull();
+        info.GetReturnValue().Set(Nan::Null());
 }
 
 NAN_METHOD(cvDisplayFormat::Process) {
-        NanScope();
+        Nan::HandleScope scope;
 
-        Matrix *src = ObjectWrap::Unwrap<Matrix>(args[0]->ToObject());
+        Matrix *src = Nan::ObjectWrap::Unwrap<Matrix>(info[0]->ToObject());
 
         if (src->mat.channels() != 4) {
             cv::Mat srcMat = cv::Mat::zeros(src->mat.size(), CV_8UC3);
@@ -69,5 +69,5 @@ NAN_METHOD(cvDisplayFormat::Process) {
             src->mat = dstMats[0];
         }
 
-        NanReturnNull();
+        info.GetReturnValue().Set(Nan::Null());
 }

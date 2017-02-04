@@ -8,53 +8,53 @@
 #include "Matrix.h"
 #include <nan.h>
 
-v8::Persistent<FunctionTemplate> wAccumulate::constructor;
+Nan::Persistent<FunctionTemplate> wAccumulate::constructor;
 
 float acceleration, friction;
 cv::Mat buffer;
 
 void
-wAccumulate::Init(Handle<Object> target) {
-    NanScope();
+wAccumulate::Init(Local<Object> target) {
+    Nan::HandleScope scope;
 
     //Class
-    Local<FunctionTemplate> ctor = NanNew<FunctionTemplate>(wAccumulate::New);
-    NanAssignPersistent(constructor, ctor);
+    Local<FunctionTemplate> ctor = Nan::New<FunctionTemplate>(wAccumulate::New);
+    constructor.Reset( ctor);
     ctor->InstanceTemplate()->SetInternalFieldCount(1);
-    ctor->SetClassName(NanNew("wAccumulate"));
+    ctor->SetClassName(Nan::New("wAccumulate").ToLocalChecked());
 
     // Prototype
-    NODE_SET_PROTOTYPE_METHOD(ctor, "process", Process);
+    Nan::SetPrototypeMethod(ctor, "process", Process);
 
-    target->Set(NanNew("wAccumulate"), ctor->GetFunction());
+    target->Set(Nan::New("wAccumulate").ToLocalChecked(), ctor->GetFunction());
 }
 
 NAN_METHOD(wAccumulate::New) {
-        NanScope();
+        Nan::HandleScope scope;
 
         buffer = cv::Mat::zeros(1, 1, CV_8UC1);
 
-        NanReturnValue(args.Holder());
+        info.GetReturnValue().Set(info.Holder());
 }
 
 
-wAccumulate::wAccumulate(): ObjectWrap() {
+wAccumulate::wAccumulate(): Nan::ObjectWrap() {
 
 }
 
 NAN_METHOD(wAccumulate::Process) {
-        NanScope();
+        Nan::HandleScope scope;
 
-        Matrix *src = ObjectWrap::Unwrap<Matrix>(args[0]->ToObject());
+        Matrix *src = Nan::ObjectWrap::Unwrap<Matrix>(info[0]->ToObject());
         cv::Mat srcMat = cv::Mat::zeros(src->mat.size(), CV_32FC1);
         src->mat.convertTo(srcMat, CV_32FC1);
 
-        Local<Object> outMatrixWrap = NanNew(Matrix::constructor)->GetFunction()->NewInstance();
-        Matrix *outMatrix = ObjectWrap::Unwrap<Matrix>(outMatrixWrap);
+        Local<Object> outMatrixWrap = Nan::New(Matrix::constructor)->GetFunction()->NewInstance();
+        Matrix *outMatrix = Nan::ObjectWrap::Unwrap<Matrix>(outMatrixWrap);
         outMatrix->mat = cv::Mat::zeros(srcMat.size(), CV_8UC1 );
 
-        acceleration = (float)args[1]->NumberValue();
-        friction = (float)args[2]->NumberValue();
+        acceleration = (float)info[1]->NumberValue();
+        friction = (float)info[2]->NumberValue();
 
         if (buffer.empty() || buffer.size() != srcMat.size()) {
             buffer = cv::Mat::zeros(srcMat.size(), CV_32FC1);
@@ -89,5 +89,5 @@ NAN_METHOD(wAccumulate::Process) {
 
         srcMat.convertTo(src->mat, CV_8UC3);
 
-        NanReturnNull();
+        info.GetReturnValue().Set(Nan::Null());
 }

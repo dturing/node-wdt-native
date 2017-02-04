@@ -8,11 +8,11 @@
 
 #include "OpenCV.h"
 
-class cvCamShift: public node::ObjectWrap {
+class cvCamShift: public Nan::ObjectWrap {
 public:
 
     static Persistent<FunctionTemplate> constructor;
-    static void Init(Handle<Object> target);
+    static void Init(Local<Object> target);
     static NAN_METHOD(New);
     cvCamShift();
 

@@ -7,11 +7,11 @@
 
 #include "OpenCV.h"
 
-class wMotion : public node::ObjectWrap {
+class wMotion : public Nan::ObjectWrap {
 public:
 
     static Persistent<FunctionTemplate> constructor;
-    static void Init(Handle<Object> target);
+    static void Init(Local<Object> target);
     static NAN_METHOD(New);
     wMotion();
 
